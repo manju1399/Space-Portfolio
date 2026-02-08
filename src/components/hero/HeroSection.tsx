@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Dimensions, Platform, Linking, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
 import * as Haptics from 'expo-haptics';
-import StarryBackground from '../common/StarryBackground';
+import HeroScene from './HeroScene';
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,54 +13,32 @@ interface HeroSectionProps {
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onNavigateToContact }) => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const floatAnim = useRef(new Animated.Value(0)).current;
+  const [introStep, setIntroStep] = useState(0); // 0: Robot Intro, 1: Namasthe, 2: Final Content
 
+  // Animation Values
+  const finalContentOpacity = useRef(new Animated.Value(0)).current;
+  const finalContentTranslateY = useRef(new Animated.Value(20)).current;
+
+  // Handle Intro Steps
   useEffect(() => {
-    // Pulse animation for profile ring
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-
-    // Float animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: -10,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
+    if (introStep === 1) {
+      // Show Final Content immediately after 3D intro
+      Animated.parallel([
+        Animated.timing(finalContentOpacity, { toValue: 1, duration: 1000, useNativeDriver: true }),
+        Animated.timing(finalContentTranslateY, { toValue: 0, duration: 1000, useNativeDriver: true })
+      ]).start();
+    }
+  }, [introStep]);
 
   const handleButtonPress = async (action: string) => {
     if (Platform.OS !== 'web') {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-    
+
     if (action === 'View Resume') {
       // Download resume from assets
       if (Platform.OS === 'web') {
-        // For web, try to fetch and download the resume
         try {
-          // Use require to get the asset path
           const resumePath = require('../../../assets/Manjunath.pdf');
           const link = document.createElement('a');
           link.href = resumePath;
@@ -74,138 +52,82 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigateToContact }) => {
           alert('Resume download will be available soon. Please contact me directly!');
         }
       } else {
-        // For native, use Linking
         const resumeUrl = require('../../../assets/Manjunath.pdf');
         await Linking.openURL(resumeUrl);
       }
     } else if (action === 'Contact Me') {
-      // Navigate to contact section
       if (onNavigateToContact) {
         onNavigateToContact();
       }
     }
   };
 
+  const isMobile = width < 768;
+
   return (
     <View style={styles.container}>
-      <StarryBackground />
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Profile Section */}
-        <Animatable.View 
-          animation="fadeInDown" 
-          duration={1000}
-          style={styles.profileContainer}
-        >
-          <Animated.View 
-            style={[
-              styles.profileRingOuter,
-              { transform: [{ scale: pulseAnim }] }
-            ]}
-          >
-            <LinearGradient
-              colors={['#6C63FF', '#FF6584', '#6C63FF']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.profileRing}
+      {/* Background & Robot Scene */}
+      <HeroScene onIntroStep={setIntroStep} />
+
+      {/* Content Overlay */}
+      <View style={[styles.overlayContainer, isMobile && styles.overlayContainerMobile]} pointerEvents="box-none">
+
+        {/* Left Column (Spacer for Robot) - Pass through clicks */}
+        {!isMobile && <View style={styles.leftColumn} pointerEvents="none" />}
+
+        {/* Right Column (Content) */}
+        <View style={[styles.rightColumn, isMobile && styles.rightColumnMobile]} pointerEvents="box-none">
+
+          {/* Final Content Phase */}
+          {introStep >= 1 && (
+            <Animated.View
+              style={{
+                opacity: finalContentOpacity,
+                transform: [{ translateY: finalContentTranslateY }],
+                width: '100%',
+                alignItems: isMobile ? 'center' : 'flex-start'
+              }}
             >
-              <View style={styles.profileImageContainer}>
-                <Image 
-                  source={require('../../../assets/meai.jpg')}
-                  style={styles.profileImage}
-                  resizeMode="cover"
-                />
+              <Text style={[styles.heading, isMobile && styles.textCenter]}>Welcome to My space</Text>
+
+              <View style={styles.divider} />
+
+              <Text style={[styles.bio, isMobile && styles.textCenter]}>
+                A motivated and detail-oriented software developer with hands-on experience
+                in backend and server side technologies, including Node.js, MySQL, MongoDB,
+                Docker and API integrations. Currently working as Associate Software Engineer.
+              </Text>
+
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  onPress={() => handleButtonPress('View Resume')}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['#6C63FF', '#5A52D5']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.primaryButton}
+                  >
+                    <Ionicons name="document-text" size={20} color="#FFFFFF" />
+                    <Text style={styles.buttonText}>View Resume</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleButtonPress('Contact Me')}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.secondaryButton}>
+                    <Ionicons name="mail" size={20} color="#6C63FF" />
+                    <Text style={styles.secondaryButtonText}>Contact Me</Text>
+                  </View>
+                </TouchableOpacity>
               </View>
-            </LinearGradient>
-          </Animated.View>
-        </Animatable.View>
-
-        {/* Name and Title */}
-        <Animatable.View animation="fadeInUp" delay={300} duration={1000}>
-          <Text style={styles.name}>MANJUNATH</Text>
-          <Text style={styles.title}>SOFTWARE DEVELOPER</Text>
-        </Animatable.View>
-
-        {/* Animated Tagline */}
-        <Animatable.View 
-          animation="pulse" 
-          iterationCount="infinite"
-          delay={600}
-          style={styles.taglineContainer}
-        >
-          <LinearGradient
-            colors={['rgba(108, 99, 255, 0.2)', 'rgba(255, 101, 132, 0.2)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.taglineGradient}
-          >
-            <Text style={styles.tagline}>Turning code into constellations ✨</Text>
-          </LinearGradient>
-        </Animatable.View>
-
-        {/* Bio */}
-        <Animatable.View animation="fadeIn" delay={900} duration={1000}>
-          <Text style={styles.bio}>
-            A motivated and detail-oriented software developer with hands-on experience
-            in backend and server side technologies, including Node.js, MySQL, MongoDB,
-            Docker and API integrations. Currently working as Associate Software Engineer at Ezee.ai.
-          </Text>
-        </Animatable.View>
-
-        {/* Action Buttons */}
-        <Animatable.View 
-          animation="fadeInUp" 
-          delay={1200}
-          style={styles.buttonContainer}
-        >
-          <TouchableOpacity 
-            onPress={() => handleButtonPress('View Resume')}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#6C63FF', '#5A52D5']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.primaryButton}
-            >
-              <Ionicons name="document-text" size={20} color="#FFFFFF" />
-              <Text style={styles.buttonText}>View Resume</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            onPress={() => handleButtonPress('Contact Me')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.secondaryButton}>
-              <Ionicons name="mail" size={20} color="#6C63FF" />
-              <Text style={styles.secondaryButtonText}>Contact Me</Text>
-            </View>
-          </TouchableOpacity>
-        </Animatable.View>
-
-        {/* Floating Elements */}
-        <Animated.View 
-          style={[
-            styles.floatingPlanet,
-            { transform: [{ translateY: floatAnim }] }
-          ]}
-        >
-          <Ionicons name="planet" size={40} color="rgba(108, 99, 255, 0.3)" />
-        </Animated.View>
-
-        <Animated.View 
-          style={[
-            styles.floatingRocket,
-            { transform: [{ translateY: floatAnim }] }
-          ]}
-        >
-          <Ionicons name="rocket" size={35} color="rgba(255, 101, 132, 0.3)" />
-        </Animated.View>
-      </ScrollView>
+            </Animated.View>
+          )}
+        </View>
+      </View>
     </View>
   );
 };
@@ -215,97 +137,75 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0A0A1A',
   },
-  scrollView: {
+  overlayContainer: {
     flex: 1,
+    flexDirection: 'row',
+    zIndex: 10, // Above canvas
   },
-  content: {
-    alignItems: 'center',
-    paddingVertical: width < 768 ? 20 : 40,
-    paddingHorizontal: width < 768 ? 16 : 20,
+  overlayContainerMobile: {
+    flexDirection: 'column',
   },
-  profileContainer: {
-    marginTop: 20,
-    marginBottom: 30,
+  leftColumn: {
+    flex: 1, // Occupies left 50%
   },
-  profileRingOuter: {
-    padding: 4,
-  },
-  profileRing: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    padding: 5,
+  rightColumn: {
+    flex: 1, // Occupies right 50%
     justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 40,
+    marginTop: -50, // Slight adjustment for balance
   },
-  profileImageContainer: {
-    width: 170,
-    height: 170,
-    borderRadius: 85,
-    backgroundColor: '#14142A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+  rightColumnMobile: {
+    justifyContent: 'flex-start',
+    paddingHorizontal: 20,
+    marginTop: 350, // Push content down below robot (approx robot height)
+    paddingBottom: 50,
   },
-  profileImage: {
-    width: 170,
-    height: 170,
-    borderRadius: 85,
-  },
-  name: {
-    fontSize: width < 768 ? 24 : 32,
+  namastheText: {
+    fontSize: 60,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    textAlign: 'center',
     letterSpacing: 2,
-    marginBottom: 8,
+    fontFamily: Platform.OS === 'web' ? 'sans-serif' : 'System',
+    textShadowColor: 'rgba(108, 99, 255, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
-  title: {
-    fontSize: 16,
-    color: '#6C63FF',
-    textAlign: 'center',
-    letterSpacing: 3,
-    marginBottom: 20,
-  },
-  taglineContainer: {
-    marginVertical: 20,
-  },
-  taglineGradient: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(108, 99, 255, 0.3)',
-  },
-  tagline: {
-    fontSize: 16,
+  heading: {
+    fontSize: 42,
+    fontWeight: '800',
     color: '#FFFFFF',
+    marginBottom: 15,
+    lineHeight: 50,
+  },
+  textCenter: {
     textAlign: 'center',
-    fontStyle: 'italic',
+  },
+  divider: {
+    width: 60,
+    height: 4,
+    backgroundColor: '#6C63FF',
+    marginBottom: 25,
+    borderRadius: 2,
   },
   bio: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#B0B0C0',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginTop: 10,
-    marginBottom: 30,
-    paddingHorizontal: 10,
+    lineHeight: 28,
+    maxWidth: 500,
+    marginBottom: 35,
   },
   buttonContainer: {
-    flexDirection: width < 768 ? 'column' : 'row',
+    flexDirection: 'row',
     gap: 15,
-    marginTop: 10,
-    width: width < 768 ? '100%' : 'auto',
   },
   primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 25,
-    gap: 8,
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 30,
+    gap: 10,
     shadowColor: '#6C63FF',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
@@ -316,33 +216,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 25,
-    gap: 8,
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 30,
+    gap: 10,
     borderWidth: 2,
     borderColor: '#6C63FF',
     backgroundColor: 'transparent',
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   secondaryButtonText: {
     color: '#6C63FF',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-  },
-  floatingPlanet: {
-    position: 'absolute',
-    top: 100,
-    right: 30,
-  },
-  floatingRocket: {
-    position: 'absolute',
-    bottom: 150,
-    left: 30,
   },
 });
 
