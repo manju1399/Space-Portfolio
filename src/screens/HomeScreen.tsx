@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, StatusBar, TouchableOpacity, Text, Animated, Dimensions } from 'react-native';
+import { StyleSheet, View, ScrollView, StatusBar, TouchableOpacity, Text, Animated, Dimensions, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,6 +29,18 @@ const HomeScreen = () => {
     return () => subscription?.remove();
   }, []);
 
+  // Lock body scroll on web when menu is open
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const isDesktopView = dimensions.width >= 1024;
+      if (menuOpen && !isDesktopView) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'auto';
+      }
+    }
+  }, [menuOpen, dimensions.width]);
+
   const menuItems = [
     { name: 'Home', icon: 'home', component: HeroSection },
     { name: 'About', icon: 'person', component: AboutSection },
@@ -41,14 +53,14 @@ const HomeScreen = () => {
   const toggleMenu = async () => {
     await triggerHaptic('medium');
     const toValue = menuOpen ? -dimensions.width : 0;
-    
+
     Animated.spring(slideAnim, {
       toValue,
       useNativeDriver: true,
       tension: 65,
       friction: 11,
     }).start();
-    
+
     setMenuOpen(!menuOpen);
   };
 
@@ -71,7 +83,7 @@ const HomeScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" backgroundColor="#0A0A1A" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         {/* Mobile: Hamburger */}
@@ -80,7 +92,7 @@ const HomeScreen = () => {
             <Ionicons name={menuOpen ? 'close' : 'menu'} size={28} color="#FFFFFF" />
           </TouchableOpacity>
         )}
-        
+
         {/* Desktop: Logo/Title */}
         {isDesktop && (
           <View style={styles.desktopLogo}>
@@ -88,10 +100,10 @@ const HomeScreen = () => {
             <Text style={styles.logoText}>Manju's Space</Text>
           </View>
         )}
-        
+
         {/* Mobile: Section Title */}
         {!isDesktop && <Text style={styles.headerTitle}>{activeSection}</Text>}
-        
+
         {/* Desktop: Navigation Links */}
         {isDesktop && (
           <View style={styles.desktopNav}>
@@ -104,10 +116,10 @@ const HomeScreen = () => {
                 ]}
                 onPress={() => handleMenuItemPress(item.name)}
               >
-                <Ionicons 
-                  name={item.icon as any} 
-                  size={18} 
-                  color={activeSection === item.name ? '#6C63FF' : '#B0B0C0'} 
+                <Ionicons
+                  name={item.icon as any}
+                  size={18}
+                  color={activeSection === item.name ? '#6C63FF' : '#B0B0C0'}
                 />
                 <Text style={[
                   styles.desktopNavText,
@@ -119,12 +131,12 @@ const HomeScreen = () => {
             ))}
           </View>
         )}
-        
+
         {!isDesktop && <View style={styles.headerSpacer} />}
       </View>
 
       {/* Main Content */}
-      <View style={styles.content}>
+      <View style={styles.content} pointerEvents={!isDesktop && menuOpen ? 'none' : 'auto'}>
         {activeSection === 'Home' ? (
           <HeroSection onNavigateToContact={handleNavigateToContact} />
         ) : (
@@ -134,68 +146,68 @@ const HomeScreen = () => {
 
       {/* Sliding Menu - Mobile Only */}
       {!isDesktop && (
-        <Animated.View 
+        <Animated.View
           style={[
             styles.menu,
             { transform: [{ translateX: slideAnim }] }
           ]}
         >
-        <LinearGradient
-          colors={['#14142A', '#1A1A2E']}
-          style={styles.menuGradient}
-        >
-          <View style={styles.menuHeader}>
-            <Text style={styles.menuTitle}>Manju's Space</Text>
-            <TouchableOpacity onPress={toggleMenu}>
-              <Ionicons name="close" size={28} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.menuItems} showsVerticalScrollIndicator={false}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.menuItem,
-                  activeSection === item.name && styles.menuItemActive
-                ]}
-                onPress={() => handleMenuItemPress(item.name)}
-              >
-                <View style={[
-                  styles.menuIconContainer,
-                  activeSection === item.name && styles.menuIconContainerActive
-                ]}>
-                  <Ionicons 
-                    name={item.icon as any} 
-                    size={24} 
-                    color={activeSection === item.name ? '#6C63FF' : '#B0B0C0'} 
-                  />
-                </View>
-                <Text style={[
-                  styles.menuItemText,
-                  activeSection === item.name && styles.menuItemTextActive
-                ]}>
-                  {item.name}
-                </Text>
-                {activeSection === item.name && (
-                  <View style={styles.activeIndicator} />
-                )}
+          <LinearGradient
+            colors={['#14142A', '#1A1A2E']}
+            style={styles.menuGradient}
+          >
+            <View style={styles.menuHeader}>
+              <Text style={styles.menuTitle}>Manju's Space</Text>
+              <TouchableOpacity onPress={toggleMenu}>
+                <Ionicons name="close" size={28} color="#FFFFFF" />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
 
-          <View style={styles.menuFooter}>
-            <Text style={styles.menuFooterText}>Made with ❤️</Text>
-            <Text style={styles.menuFooterSubtext}>v1.0.0</Text>
-          </View>
-        </LinearGradient>
-      </Animated.View>
+            <ScrollView style={styles.menuItems} showsVerticalScrollIndicator={false}>
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.menuItem,
+                    activeSection === item.name && styles.menuItemActive
+                  ]}
+                  onPress={() => handleMenuItemPress(item.name)}
+                >
+                  <View style={[
+                    styles.menuIconContainer,
+                    activeSection === item.name && styles.menuIconContainerActive
+                  ]}>
+                    <Ionicons
+                      name={item.icon as any}
+                      size={24}
+                      color={activeSection === item.name ? '#6C63FF' : '#B0B0C0'}
+                    />
+                  </View>
+                  <Text style={[
+                    styles.menuItemText,
+                    activeSection === item.name && styles.menuItemTextActive
+                  ]}>
+                    {item.name}
+                  </Text>
+                  {activeSection === item.name && (
+                    <View style={styles.activeIndicator} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={styles.menuFooter}>
+              <Text style={styles.menuFooterText}>Made with ❤️</Text>
+              <Text style={styles.menuFooterSubtext}>v1.0.0</Text>
+            </View>
+          </LinearGradient>
+        </Animated.View>
       )}
 
       {/* Overlay - Mobile Only */}
       {!isDesktop && menuOpen && (
-        <TouchableOpacity 
-          style={styles.overlay} 
+        <TouchableOpacity
+          style={styles.overlay}
           activeOpacity={1}
           onPress={toggleMenu}
         />
@@ -221,6 +233,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#14142A',
     borderBottomWidth: 1,
     borderBottomColor: '#2A2A4A',
+    zIndex: 100, // Ensure header stays on top
+    // @ts-ignore
+    position: Platform.OS === 'web' ? 'fixed' : 'relative',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   hamburgerButton: {
     padding: 8,
@@ -236,9 +254,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    paddingTop: Platform.OS === 'web' ? 60 : 0, // Add padding for fixed header on web
   },
   menu: {
-    position: 'absolute',
+    // @ts-ignore
+    position: Platform.OS === 'web' ? 'fixed' : 'absolute',
     top: 0,
     left: 0,
     bottom: 0,
@@ -324,7 +344,8 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   overlay: {
-    position: 'absolute',
+    // @ts-ignore
+    position: Platform.OS === 'web' ? 'fixed' : 'absolute',
     top: 0,
     left: 0,
     right: 0,

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Animatable from 'react-native-animatable';
 import * as Haptics from 'expo-haptics';
 import HeroScene from './HeroScene';
+import StarryBackground from '../common/StarryBackground';
 
 const { width, height } = Dimensions.get('window');
 
@@ -67,6 +68,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigateToContact }) => {
   return (
     <View style={styles.container}>
       {/* Background & Robot Scene */}
+      <StarryBackground />
       <HeroScene onIntroStep={setIntroStep} />
 
       {/* Content Overlay */}

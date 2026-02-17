@@ -96,9 +96,88 @@ const ChatButton = () => {
     setIsOpen(!isOpen);
   };
 
+
+  const renderChatContent = () => (
+    <View style={[
+      styles.chatContainer,
+      Platform.OS === 'web' && styles.webChatWindow
+    ]}>
+      {/* Header */}
+      <LinearGradient
+        colors={['#6C63FF', '#5A52D5']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.chatHeader}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.avatarContainer}>
+            <Ionicons name="chatbubbles" size={24} color="#FFFFFF" />
+          </View>
+          <View>
+            <Text style={styles.headerTitle}>Chat Assistant</Text>
+            <Text style={styles.headerSubtitle}>Ask me anything!</Text>
+          </View>
+        </View>
+        <TouchableOpacity onPress={toggleChat}>
+          <Ionicons name="close" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </LinearGradient>
+
+      {/* Messages */}
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.messagesContainer}
+        contentContainerStyle={styles.messagesContent}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
+        {messages.map((message) => (
+          <View
+            key={message.id}
+            style={[
+              styles.messageBubble,
+              message.isUser ? styles.userMessage : styles.botMessage,
+            ]}
+          >
+            <Text style={styles.messageText}>{message.text}</Text>
+          </View>
+        ))}
+
+        {isTyping && (
+          <View style={[styles.messageBubble, styles.botMessage]}>
+            <View style={styles.typingIndicator}>
+              <View style={styles.typingDot} />
+              <View style={styles.typingDot} />
+              <View style={styles.typingDot} />
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Quick Questions */}
+      <View style={styles.questionsContainer}>
+        <Text style={styles.questionsTitle}>Quick Questions:</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {predefinedQuestions.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleQuestionPress(item.question, item.answer)}
+              style={styles.questionButton}
+            >
+              <Text style={styles.questionText}>{item.question}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  );
+
   return (
     <>
-      <Animated.View style={[styles.floatingButton, { transform: [{ scale: scaleAnim }] }]}>
+      <Animated.View style={[
+        styles.floatingButton,
+        { transform: [{ scale: scaleAnim }] },
+        Platform.OS === 'web' && styles.webFloatingButton
+      ]}>
         <TouchableOpacity onPress={toggleChat} activeOpacity={0.8}>
           <LinearGradient
             colors={['#6C63FF', '#FF6584']}
@@ -111,85 +190,29 @@ const ChatButton = () => {
         </TouchableOpacity>
       </Animated.View>
 
-      <Modal
-        visible={isOpen}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={toggleChat}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.chatContainer}>
-            {/* Header */}
-            <LinearGradient
-              colors={['#6C63FF', '#5A52D5']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.chatHeader}
-            >
-              <View style={styles.headerContent}>
-                <View style={styles.avatarContainer}>
-                  <Ionicons name="chatbubbles" size={24} color="#FFFFFF" />
-                </View>
-                <View>
-                  <Text style={styles.headerTitle}>Chat Assistant</Text>
-                  <Text style={styles.headerSubtitle}>Ask me anything!</Text>
-                </View>
-              </View>
-              <TouchableOpacity onPress={toggleChat}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </LinearGradient>
-
-            {/* Messages */}
-            <ScrollView 
-              ref={scrollViewRef}
-              style={styles.messagesContainer}
-              contentContainerStyle={styles.messagesContent}
-              onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-            >
-              {messages.map((message) => (
-                <View
-                  key={message.id}
-                  style={[
-                    styles.messageBubble,
-                    message.isUser ? styles.userMessage : styles.botMessage,
-                  ]}
-                >
-                  <Text style={styles.messageText}>{message.text}</Text>
-                </View>
-              ))}
-              
-              {isTyping && (
-                <View style={[styles.messageBubble, styles.botMessage]}>
-                  <View style={styles.typingIndicator}>
-                    <View style={styles.typingDot} />
-                    <View style={styles.typingDot} />
-                    <View style={styles.typingDot} />
-                  </View>
-                </View>
-              )}
-            </ScrollView>
-
-            {/* Quick Questions */}
-            <View style={styles.questionsContainer}>
-              <Text style={styles.questionsTitle}>Quick Questions:</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {predefinedQuestions.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => handleQuestionPress(item.question, item.answer)}
-                    style={styles.questionButton}
-                  >
-                    <Text style={styles.questionText}>{item.question}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
+      {/* Web View: Popover */}
+      {Platform.OS === 'web' ? (
+        isOpen && (
+          <View style={styles.webChatContainer}>
+            {renderChatContent()}
           </View>
-        </View>
-      </Modal>
+        )
+      ) : (
+        /* Mobile View: Modal */
+        <Modal
+          visible={isOpen}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={toggleChat}
+        >
+          <View style={styles.modalContainer}>
+            {renderChatContent()}
+          </View>
+        </Modal>
+      )}
     </>
   );
+
 };
 
 const styles = StyleSheet.create({
@@ -198,6 +221,28 @@ const styles = StyleSheet.create({
     bottom: 20,
     right: 20,
     zIndex: 1000,
+  },
+  webFloatingButton: {
+    // @ts-ignore
+    position: 'fixed',
+  },
+  webChatContainer: {
+    // @ts-ignore
+    position: 'fixed',
+    bottom: 90,
+    right: 20,
+    zIndex: 1000,
+    width: 380,
+    maxWidth: '90%',
+    height: 500,
+    maxHeight: '80%',
+  },
+  webChatWindow: {
+    width: '100%',
+    height: '100%',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
   },
   chatButton: {
     width: 60,
