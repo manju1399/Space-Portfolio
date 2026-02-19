@@ -95,9 +95,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onNavigateToContact }) => {
               <View style={styles.divider} />
 
               <Text style={[styles.bio, isMobile && styles.textCenter]}>
-                A motivated and detail-oriented software developer with hands-on experience
-                in backend and server side technologies, including Node.js, MySQL, MongoDB,
-                Docker and API integrations. Currently working as Associate Software Engineer.
+                Backend-focused full stack engineer with 3 years of experience building scalable
+                distributed systems using Node.js, event-driven architecture, and backend system
+                design principles.
               </Text>
 
               <View style={styles.buttonContainer}>

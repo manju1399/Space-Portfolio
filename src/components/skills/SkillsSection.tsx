@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Platform, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
@@ -16,36 +16,42 @@ interface Skill {
 
 const SkillsSection = () => {
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
 
   const skills = {
-    frontend: [
-      { name: 'React', icon: 'logo-react', color: '#61DAFB', description: 'Building interactive UIs with React hooks and state management', level: 'Advanced' },
-      { name: 'React Native', icon: 'phone-portrait', color: '#61DAFB', description: 'Cross-platform mobile app development', level: 'Intermediate' },
-      { name: 'Angular', icon: 'logo-angular', color: '#DD0031', description: 'Building dynamic web applications with Angular framework', level: 'Intermediate' },
-      { name: 'HTML/CSS', icon: 'logo-html5', color: '#E34F26', description: 'Semantic HTML and modern CSS with animations', level: 'Advanced' },
-      { name: 'JavaScript', icon: 'logo-javascript', color: '#F7DF1E', description: 'ES6+ features, async programming, and DOM manipulation', level: 'Advanced' },
-      { name: 'TypeScript', icon: 'logo-javascript', color: '#3178C6', description: 'Type-safe JavaScript development', level: 'Intermediate' },
-    ],
     backend: [
-      { name: 'Node.js', icon: 'logo-nodejs', color: '#339933', description: 'Server-side JavaScript with Express.js', level: 'Advanced' },
-      { name: 'Python', icon: 'logo-python', color: '#3776AB', description: 'Backend development and scripting', level: 'Intermediate' },
-      { name: 'Java', icon: 'logo-java', color: '#007396', description: 'Object-oriented programming and Spring Boot', level: 'Intermediate' },
-      { name: 'MySQL', icon: 'server', color: '#4479A1', description: 'Relational database design and queries', level: 'Intermediate' },
-      { name: 'MongoDB', icon: 'leaf', color: '#47A248', description: 'NoSQL database with expertise in GridFS, CSFLE (Client-Side Field Level Encryption), indexes optimization, and complex aggregations for scalable applications', level: 'Advanced' },
+      { name: 'Node.js', icon: 'logo-nodejs', color: '#339933', description: 'Server-side JavaScript with Event-driven architecture', level: 'Advanced' },
+      { name: 'Express.js', icon: 'server', color: '#000000', description: 'Web application framework for Node.js', level: 'Advanced' },
+      { name: 'REST APIs', icon: 'globe', color: '#6C63FF', description: 'Designing and implementing scalable APIs', level: 'Advanced' },
+      { name: 'GraphQL', icon: 'logo-react', color: '#E10098', description: 'Data query language for APIs', level: 'Intermediate' },
+      { name: 'Bash', icon: 'terminal', color: '#4EAA25', description: 'Shell scripting for automation', level: 'Advanced' },
     ],
-    tools: [
-      { name: 'Docker', icon: 'cube', color: '#2496ED', description: 'Containerization and deployment', level: 'Advanced' },
-      { name: 'Jenkins', icon: 'construct', color: '#D24939', description: 'CI/CD pipeline automation and build management', level: 'Intermediate' },
-      { name: 'Bash Script', icon: 'terminal', color: '#4EAA25', description: 'Shell scripting for automation and file processing', level: 'Advanced' },
-      { name: 'Git', icon: 'git-branch', color: '#F05032', description: 'Version control and collaboration', level: 'Advanced' },
-      { name: 'VS Code', icon: 'code-slash', color: '#007ACC', description: 'Primary development environment', level: 'Advanced' },
+    database: [
+      { name: 'MongoDB', icon: 'leaf', color: '#47A248', description: 'GridFS, Aggregation Pipeline, Time series collections', level: 'Advanced' },
+      { name: 'SQL', icon: 'server', color: '#4479A1', description: 'Relational database management', level: 'Intermediate' },
+      { name: 'Redis', icon: 'layers', color: '#D82C20', description: 'In-memory data structure store', level: 'Intermediate' },
     ],
-    soft: [
-      { name: 'Problem Solving', icon: 'bulb', color: '#FFD700', description: 'Analytical thinking and debugging', level: 'Advanced' },
-      { name: 'Team Work', icon: 'people', color: '#FF6584', description: 'Collaboration and communication', level: 'Advanced' },
-      { name: 'Leadership', icon: 'trophy', color: '#6C63FF', description: 'Project management and mentoring', level: 'Intermediate' },
-      { name: 'Adaptability', icon: 'sync', color: '#00CED1', description: 'Quick learning and flexibility', level: 'Advanced' },
+    messaging: [
+      { name: 'RabbitMQ', icon: 'mail', color: '#FF6600', description: 'Message broker for asynchronous processing', level: 'Advanced' },
+      { name: 'Kafka', icon: 'pulse', color: '#231F20', description: 'Distributed event streaming', level: 'Intermediate' },
     ],
+    frontend: [
+      { name: 'Angular', icon: 'logo-angular', color: '#DD0031', description: 'Platform for building mobile and desktop web apps', level: 'Intermediate' },
+      { name: 'TypeScript', icon: 'logo-javascript', color: '#3178C6', description: 'Typed superset of JavaScript', level: 'Intermediate' },
+      { name: 'HTML/CSS', icon: 'logo-html5', color: '#E34F26', description: 'Web standards and styling', level: 'Advanced' },
+    ],
+    devops: [
+      { name: 'Docker', icon: 'cube', color: '#2496ED', description: 'Containerization platform', level: 'Advanced' },
+      { name: 'Jenkins', icon: 'construct', color: '#D24939', description: 'Automation server for CI/CD', level: 'Intermediate' },
+      { name: 'Azure', icon: 'cloud', color: '#007FFF', description: 'Cloud computing services', level: 'Intermediate' },
+      { name: 'Nginx', icon: 'shuffle', color: '#009639', description: 'Web server and reverse proxy', level: 'Intermediate' },
+    ],
+    architecture: [
+      { name: 'Microservices', icon: 'apps', color: '#6C63FF', description: 'Architectural style for distributed systems', level: 'Advanced' },
+      { name: 'Event-driven', icon: 'flash', color: '#FFD700', description: 'Architecture based on event production and consumption', level: 'Advanced' },
+      { name: 'Low-code', icon: 'options', color: '#FF6584', description: 'Config-driven platform design', level: 'Advanced' },
+    ]
   };
 
   const handleSkillPress = async (skill: Skill) => {
@@ -87,9 +93,12 @@ const SkillsSection = () => {
   return (
     <View style={styles.container}>
       <StarryBackground />
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isDesktop && styles.contentWeb
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -99,48 +108,74 @@ const SkillsSection = () => {
           <Text style={styles.subtitle}>Tap on any skill to learn more</Text>
         </Animatable.View>
 
-        {/* Frontend Skills */}
-        <View style={styles.categoryContainer}>
-          <View style={styles.categoryHeader}>
-            <Ionicons name="desktop" size={24} color="#61DAFB" />
-            <Text style={styles.categoryTitle}>Frontend Development</Text>
-          </View>
-          <View style={styles.skillsGrid}>
-            {skills.frontend.map((skill, index) => renderSkillCard(skill, index, index * 100))}
-          </View>
-        </View>
+        <View style={isDesktop ? styles.categoriesGrid : null}>
 
-        {/* Backend Skills */}
-        <View style={styles.categoryContainer}>
-          <View style={styles.categoryHeader}>
-            <Ionicons name="server" size={24} color="#339933" />
-            <Text style={styles.categoryTitle}>Backend Development</Text>
+          {/* Backend Skills */}
+          <View style={[styles.categoryContainer, isDesktop && styles.categoryItem]}>
+            <View style={styles.categoryHeader}>
+              <Ionicons name="server" size={24} color="#339933" />
+              <Text style={styles.categoryTitle}>Backend Development</Text>
+            </View>
+            <View style={styles.skillsGrid}>
+              {skills.backend.map((skill, index) => renderSkillCard(skill, index, index * 100))}
+            </View>
           </View>
-          <View style={styles.skillsGrid}>
-            {skills.backend.map((skill, index) => renderSkillCard(skill, index, index * 100))}
-          </View>
-        </View>
 
-        {/* Tools */}
-        <View style={styles.categoryContainer}>
-          <View style={styles.categoryHeader}>
-            <Ionicons name="construct" size={24} color="#F05032" />
-            <Text style={styles.categoryTitle}>Tools & Technologies</Text>
+          {/* Database Skills */}
+          <View style={[styles.categoryContainer, isDesktop && styles.categoryItem]}>
+            <View style={styles.categoryHeader}>
+              <Ionicons name="server" size={24} color="#4479A1" />
+              <Text style={styles.categoryTitle}>Database Technologies</Text>
+            </View>
+            <View style={styles.skillsGrid}>
+              {skills.database.map((skill, index) => renderSkillCard(skill, index, index * 100))}
+            </View>
           </View>
-          <View style={styles.skillsGrid}>
-            {skills.tools.map((skill, index) => renderSkillCard(skill, index, index * 100))}
-          </View>
-        </View>
 
-        {/* Soft Skills */}
-        <View style={styles.categoryContainer}>
-          <View style={styles.categoryHeader}>
-            <Ionicons name="star" size={24} color="#FFD700" />
-            <Text style={styles.categoryTitle}>Soft Skills</Text>
+          {/* Messaging & Async */}
+          <View style={[styles.categoryContainer, isDesktop && styles.categoryItem]}>
+            <View style={styles.categoryHeader}>
+              <Ionicons name="mail" size={24} color="#FF6600" />
+              <Text style={styles.categoryTitle}>Messaging & Async</Text>
+            </View>
+            <View style={styles.skillsGrid}>
+              {skills.messaging.map((skill, index) => renderSkillCard(skill, index, index * 100))}
+            </View>
           </View>
-          <View style={styles.skillsGrid}>
-            {skills.soft.map((skill, index) => renderSkillCard(skill, index, index * 100))}
+
+          {/* Frontend Skills */}
+          <View style={[styles.categoryContainer, isDesktop && styles.categoryItem]}>
+            <View style={styles.categoryHeader}>
+              <Ionicons name="desktop" size={24} color="#61DAFB" />
+              <Text style={styles.categoryTitle}>Frontend Development</Text>
+            </View>
+            <View style={styles.skillsGrid}>
+              {skills.frontend.map((skill, index) => renderSkillCard(skill, index, index * 100))}
+            </View>
           </View>
+
+          {/* DevOps */}
+          <View style={[styles.categoryContainer, isDesktop && styles.categoryItem]}>
+            <View style={styles.categoryHeader}>
+              <Ionicons name="cloud" size={24} color="#2496ED" />
+              <Text style={styles.categoryTitle}>DevOps & Cloud</Text>
+            </View>
+            <View style={styles.skillsGrid}>
+              {skills.devops.map((skill, index) => renderSkillCard(skill, index, index * 100))}
+            </View>
+          </View>
+
+          {/* Architecture */}
+          <View style={[styles.categoryContainer, isDesktop && styles.categoryItem]}>
+            <View style={styles.categoryHeader}>
+              <Ionicons name="construct" size={24} color="#6C63FF" />
+              <Text style={styles.categoryTitle}>Architecture & Design</Text>
+            </View>
+            <View style={styles.skillsGrid}>
+              {skills.architecture.map((skill, index) => renderSkillCard(skill, index, index * 100))}
+            </View>
+          </View>
+
         </View>
       </ScrollView>
 
@@ -159,7 +194,7 @@ const SkillsSection = () => {
               end={{ x: 1, y: 1 }}
               style={styles.modalContent}
             >
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setSelectedSkill(null)}
               >
@@ -171,7 +206,7 @@ const SkillsSection = () => {
               </View>
 
               <Text style={styles.modalTitle}>{selectedSkill?.name}</Text>
-              
+
               <View style={[styles.modalLevelBadge, { backgroundColor: selectedSkill?.color + '20' }]}>
                 <Text style={[styles.modalLevelText, { color: selectedSkill?.color }]}>
                   {selectedSkill?.level}
@@ -180,7 +215,7 @@ const SkillsSection = () => {
 
               <Text style={styles.modalDescription}>{selectedSkill?.description}</Text>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setSelectedSkill(null)}
                 style={[styles.modalButton, { backgroundColor: selectedSkill?.color }]}
               >
@@ -206,6 +241,12 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
+  contentWeb: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    paddingHorizontal: 40,
+  },
   sectionTitle: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -228,8 +269,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
   },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
   categoryContainer: {
     marginBottom: 30,
+  },
+  categoryItem: {
+    width: '48%', // 2 columns on desktop
   },
   categoryHeader: {
     flexDirection: 'row',

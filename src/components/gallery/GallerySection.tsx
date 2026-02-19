@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Modal, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal, Platform, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 import * as Haptics from 'expo-haptics';
 import StarryBackground from '../common/StarryBackground';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 60;
+
 
 interface GalleryItem {
   id: number;
@@ -20,6 +19,14 @@ interface GalleryItem {
 const GallerySection = () => {
   const [viewMode, setViewMode] = useState<'slider' | 'grid'>('slider');
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
+
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+
+  // Calculate card width based on screen size
+  // On desktop, we want smaller cards to show multiple at once
+  // On mobile, full width minus padding
+  const CARD_WIDTH = isDesktop ? 400 : width - 60;
 
   const galleryItems: GalleryItem[] = [
     {
@@ -83,9 +90,9 @@ const GallerySection = () => {
   const renderSliderView = () => (
     <ScrollView
       horizontal
-      pagingEnabled
       showsHorizontalScrollIndicator={false}
-      snapToInterval={CARD_WIDTH + 20}
+      snapToInterval={CARD_WIDTH + 20} // Card width + margin
+      snapToAlignment="center"
       decelerationRate="fast"
       contentContainerStyle={styles.sliderContainer}
     >
@@ -104,7 +111,7 @@ const GallerySection = () => {
               colors={[`${item.color}40`, 'rgba(20, 20, 42, 0.9)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
-              style={styles.sliderCard}
+              style={[styles.sliderCard, { width: CARD_WIDTH }]}
             >
               <View style={[styles.imageIconContainer, { backgroundColor: `${item.color}30` }]}>
                 <Ionicons name="images" size={80} color={item.color} />
@@ -180,10 +187,10 @@ const GallerySection = () => {
               end={{ x: 1, y: 0 }}
               style={styles.toggleGradient}
             >
-              <Ionicons 
-                name={viewMode === 'slider' ? 'grid' : 'albums'} 
-                size={20} 
-                color="#FFFFFF" 
+              <Ionicons
+                name={viewMode === 'slider' ? 'grid' : 'albums'}
+                size={20}
+                color="#FFFFFF"
               />
               <Text style={styles.toggleText}>
                 {viewMode === 'slider' ? 'Grid View' : 'Slider View'}
@@ -195,7 +202,7 @@ const GallerySection = () => {
 
       {/* Content */}
       {viewMode === 'slider' ? renderSliderView() : (
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -219,7 +226,7 @@ const GallerySection = () => {
               end={{ x: 0, y: 1 }}
               style={styles.modalContent}
             >
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setSelectedImage(null)}
               >
@@ -302,9 +309,10 @@ const styles = StyleSheet.create({
   sliderContainer: {
     paddingHorizontal: 30,
     paddingVertical: 20,
+    alignItems: 'center',
   },
   sliderCard: {
-    width: CARD_WIDTH,
+    // width is now set dynamically in style prop
     height: 450,
     borderRadius: 24,
     marginRight: 20,
@@ -363,6 +371,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
+    paddingBottom: 40,
+  },
+  contentWeb: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    paddingHorizontal: 40,
   },
   gridContainer: {
     flexDirection: 'row',

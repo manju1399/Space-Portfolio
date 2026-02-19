@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   Linking,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -38,7 +39,9 @@ const ContactSchema = Yup.object().shape({
 
 const ContactSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSent, setIsSent] = useState(false); // ✅ new state
+  const [isSent, setIsSent] = useState(false);
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
 
   const handleSubmit = async (values: any, { resetForm }: any) => {
     if (isSubmitting || isSent) return; // ✅ prevent re-send after success
@@ -118,7 +121,7 @@ const ContactSection = () => {
     {
       name: "Email",
       icon: "mail",
-      url: "mailto:manjunath131999@gmail.com",
+      url: "mailto:manjunath13.dev@gmail.com",
       color: "#EA4335",
     },
   ];
@@ -128,7 +131,10 @@ const ContactSection = () => {
       <StarryBackground />
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isDesktop && styles.contentWeb
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <Animatable.View animation="fadeInDown" duration={800}>
@@ -139,170 +145,188 @@ const ContactSection = () => {
           </Text>
         </Animatable.View>
 
-        {/* Contact Form */}
-        <Animatable.View animation="fadeInUp" delay={200} duration={800}>
-          <Formik
-            initialValues={{ name: "", email: "", message: "" }}
-            validationSchema={ContactSchema}
-            onSubmit={handleSubmit}
+        <View style={isDesktop ? styles.rowContainer : styles.columnContainer}>
+          {/* Contact Form */}
+          <Animatable.View
+            animation="fadeInUp"
+            delay={200}
+            duration={800}
+            style={isDesktop ? styles.formSectionWeb : styles.formSection}
           >
-            {({
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              values,
-              errors,
-              touched,
-            }) => (
-              <View style={styles.formContainer}>
-                {/* Name */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Name</Text>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons
-                      name="person"
-                      size={20}
-                      color="#6C63FF"
-                      style={styles.inputIcon}
-                    />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Your name"
-                      placeholderTextColor="#666"
-                      value={values.name}
-                      onChangeText={handleChange("name")}
-                      onBlur={handleBlur("name")}
-                    />
-                  </View>
-                  {touched.name && errors.name && (
-                    <Text style={styles.errorText}>{errors.name}</Text>
-                  )}
-                </View>
-
-                {/* Email */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Email</Text>
-                  <View style={styles.inputWrapper}>
-                    <Ionicons
-                      name="mail"
-                      size={20}
-                      color="#6C63FF"
-                      style={styles.inputIcon}
-                    />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="your.email@example.com"
-                      placeholderTextColor="#666"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      value={values.email}
-                      onChangeText={handleChange("email")}
-                      onBlur={handleBlur("email")}
-                    />
-                  </View>
-                  {touched.email && errors.email && (
-                    <Text style={styles.errorText}>{errors.email}</Text>
-                  )}
-                </View>
-
-                {/* Message */}
-                <View style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Message</Text>
-                  <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
-                    <Ionicons
-                      name="chatbubble"
-                      size={20}
-                      color="#6C63FF"
-                      style={styles.inputIcon}
-                    />
-                    <TextInput
-                      style={[styles.input, styles.textArea]}
-                      placeholder="Your message..."
-                      placeholderTextColor="#666"
-                      multiline
-                      numberOfLines={5}
-                      textAlignVertical="top"
-                      value={values.message}
-                      onChangeText={handleChange("message")}
-                      onBlur={handleBlur("message")}
-                    />
-                  </View>
-                  {touched.message && errors.message && (
-                    <Text style={styles.errorText}>{errors.message}</Text>
-                  )}
-                </View>
-
-                {/* Submit Button */}
-                <TouchableOpacity
-                  onPress={() => handleSubmit()}
-                  disabled={isSubmitting || isSent}
-                  activeOpacity={0.8}
-                >
-                  <LinearGradient
-                    colors={
-                      isSent
-                        ? ["#0F9D58", "#1B5E20"]
-                        : isSubmitting
-                        ? ["#444", "#222"]
-                        : ["#6C63FF", "#FF6584"]
-                    }
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={[
-                      styles.submitButton,
-                      (isSubmitting || isSent) && { opacity: 0.7 },
-                    ]}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <ActivityIndicator size="small" color="#FFF" />
-                        <Text style={styles.submitButtonText}>Sending...</Text>
-                      </>
-                    ) : isSent ? (
-                      <>
-                        <Ionicons name="checkmark-circle" size={22} color="#FFF" />
-                        <Text style={styles.submitButtonText}>Sent ✅</Text>
-                      </>
-                    ) : (
-                      <>
-                        <Ionicons name="send" size={20} color="#FFFFFF" />
-                        <Text style={styles.submitButtonText}>Send Message</Text>
-                      </>
+            <Formik
+              initialValues={{ name: "", email: "", message: "" }}
+              validationSchema={ContactSchema}
+              onSubmit={handleSubmit}
+            >
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                errors,
+                touched,
+              }) => (
+                <View style={styles.formContainer}>
+                  {/* Name */}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Name</Text>
+                    <View style={styles.inputWrapper}>
+                      <Ionicons
+                        name="person"
+                        size={20}
+                        color="#6C63FF"
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Your name"
+                        placeholderTextColor="#666"
+                        value={values.name}
+                        onChangeText={handleChange("name")}
+                        onBlur={handleBlur("name")}
+                      />
+                    </View>
+                    {touched.name && errors.name && (
+                      <Text style={styles.errorText}>{errors.name}</Text>
                     )}
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-            )}
-          </Formik>
-        </Animatable.View>
+                  </View>
 
-        {/* Social Links */}
-        <Animatable.View animation="fadeInUp" delay={400} duration={800}>
-          <Text style={styles.socialTitle}>Connect With Me</Text>
-          <View style={styles.socialContainer}>
-            {socialLinks.map((social, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleSocialPress(social.url)}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={[`${social.color}40`, "rgba(20, 20, 42, 0.8)"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.socialButton}
-                >
-                  <Ionicons
-                    name={social.icon as any}
-                    size={28}
-                    color={social.color}
-                  />
-                  <Text style={styles.socialName}>{social.name}</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animatable.View>
+                  {/* Email */}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Email</Text>
+                    <View style={styles.inputWrapper}>
+                      <Ionicons
+                        name="mail"
+                        size={20}
+                        color="#6C63FF"
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={styles.input}
+                        placeholder="your.email@example.com"
+                        placeholderTextColor="#666"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        value={values.email}
+                        onChangeText={handleChange("email")}
+                        onBlur={handleBlur("email")}
+                      />
+                    </View>
+                    {touched.email && errors.email && (
+                      <Text style={styles.errorText}>{errors.email}</Text>
+                    )}
+                  </View>
+
+                  {/* Message */}
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.inputLabel}>Message</Text>
+                    <View style={[styles.inputWrapper, styles.textAreaWrapper]}>
+                      <Ionicons
+                        name="chatbubble"
+                        size={20}
+                        color="#6C63FF"
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={[styles.input, styles.textArea]}
+                        placeholder="Your message..."
+                        placeholderTextColor="#666"
+                        multiline
+                        numberOfLines={5}
+                        textAlignVertical="top"
+                        value={values.message}
+                        onChangeText={handleChange("message")}
+                        onBlur={handleBlur("message")}
+                      />
+                    </View>
+                    {touched.message && errors.message && (
+                      <Text style={styles.errorText}>{errors.message}</Text>
+                    )}
+                  </View>
+
+                  {/* Submit Button */}
+                  <TouchableOpacity
+                    onPress={() => handleSubmit()}
+                    disabled={isSubmitting || isSent}
+                    activeOpacity={0.8}
+                  >
+                    <LinearGradient
+                      colors={
+                        isSent
+                          ? ["#0F9D58", "#1B5E20"]
+                          : isSubmitting
+                            ? ["#444", "#222"]
+                            : ["#6C63FF", "#FF6584"]
+                      }
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={[
+                        styles.submitButton,
+                        (isSubmitting || isSent) && { opacity: 0.7 },
+                      ]}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <ActivityIndicator size="small" color="#FFF" />
+                          <Text style={styles.submitButtonText}>Sending...</Text>
+                        </>
+                      ) : isSent ? (
+                        <>
+                          <Ionicons name="checkmark-circle" size={22} color="#FFF" />
+                          <Text style={styles.submitButtonText}>Sent ✅</Text>
+                        </>
+                      ) : (
+                        <>
+                          <Ionicons name="send" size={20} color="#FFFFFF" />
+                          <Text style={styles.submitButtonText}>Send Message</Text>
+                        </>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </Formik>
+          </Animatable.View>
+
+          {/* Social Links */}
+          <Animatable.View
+            animation="fadeInUp"
+            delay={400}
+            duration={800}
+            style={isDesktop ? styles.socialSectionWeb : styles.socialSection}
+          >
+            <View style={[
+              styles.socialContainerWrapper,
+              isDesktop && styles.socialContainerWrapperWeb
+            ]}>
+              <Text style={styles.socialTitle}>Connect With Me</Text>
+              <View style={styles.socialContainer}>
+                {socialLinks.map((social, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleSocialPress(social.url)}
+                    activeOpacity={0.8}
+                    style={isDesktop ? styles.socialButtonWeb : null}
+                  >
+                    <LinearGradient
+                      colors={[`${social.color}40`, "rgba(20, 20, 42, 0.8)"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.socialButton, isDesktop && { width: '100%' }]}
+                    >
+                      <Ionicons
+                        name={social.icon as any}
+                        size={28}
+                        color={social.color}
+                      />
+                      <Text style={styles.socialName}>{social.name}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </Animatable.View>
+        </View>
 
         {/* Footer */}
         <Animatable.View animation="fadeIn" delay={600} duration={800}>
@@ -320,6 +344,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#0A0A1A" },
   scrollView: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
+  contentWeb: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    paddingHorizontal: 40,
+  },
   sectionTitle: {
     fontSize: 32,
     fontWeight: "bold",
@@ -340,6 +370,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#B0B0C0",
     textAlign: "center",
+    marginBottom: 30,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 40,
+  },
+  columnContainer: {
+    flexDirection: 'column',
+  },
+  formSection: {
+    width: '100%',
+  },
+  formSectionWeb: {
+    flex: 3,
+  },
+  socialSection: {
+    width: '100%',
+  },
+  socialSectionWeb: {
+    flex: 2,
+    marginTop: 0,
+  },
+  formContainer: {
     marginBottom: 30,
   },
   inputContainer: { marginBottom: 20 },
@@ -372,6 +426,17 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   submitButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "600" },
+  socialContainerWrapper: {
+    padding: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(108, 99, 255, 0.1)',
+  },
+  socialContainerWrapperWeb: {
+    height: '100%',
+    justifyContent: 'center',
+  },
   socialTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -397,6 +462,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(108,99,255,0.3)",
     gap: 10,
+  },
+  socialButtonWeb: {
+    width: '100%',
+    maxWidth: 280,
   },
   socialName: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
   footer: { fontSize: 14, color: "#B0B0C0", textAlign: "center", marginTop: 10 },

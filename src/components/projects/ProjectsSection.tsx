@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Platform, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
@@ -9,102 +9,73 @@ import StarryBackground from '../common/StarryBackground';
 
 const ProjectsSection = () => {
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const isTablet = width >= 768 && width < 1024;
 
   const projects = [
     {
       id: 1,
-      title: 'MJR File Converter',
-      description: 'Converts text files to MDR format with advanced parsing and validation features.',
-      tags: ['Python', 'File Processing', 'GUI'],
-      icon: 'document-text',
+      title: 'Business Rule Engine (BRE)',
+      description: 'Configurable rule engine enabling dynamic business logic execution without code redeployment.',
+      tags: ['Node.js', 'MongoDB GridFS', 'RabbitMQ', 'Redis'],
+      icon: 'settings',
       color: '#6C63FF',
-      githubUrl: 'https://github.com/manju1399',
-      demoUrl: 'https://convertio-bac37.web.app/',
+      githubUrl: null,
+      demoUrl: null,
       features: [
-        'Advanced file parsing and conversion',
-        'User-friendly GUI interface',
-        'Error handling and validation',
-        'Batch processing support',
+        'Dynamic business logic execution',
+        'Event-driven batch processing via RabbitMQ',
+        'High-volume rule computation',
+        'Storage optimization using GridFS',
       ],
     },
     {
       id: 2,
-      title: 'Portfolio Website',
-      description: 'Modern and responsive personal portfolio showcasing projects and skills with interactive animations.',
-      tags: ['React Native', 'TypeScript', 'Expo'],
-      icon: 'globe',
+      title: 'Video KYC Platform',
+      description: 'Real-time Video KYC platform for banking clients with optimized video processing.',
+      tags: ['Node.js', 'GraphQL', 'WebSockets', 'Janus'],
+      icon: 'videocam',
       color: '#FF6584',
-      githubUrl: 'https://github.com/manju1399',
-      demoUrl: 'https://manjunath-9913.web.app',
+      githubUrl: null,
+      demoUrl: null,
       features: [
-        'Responsive design for all devices',
-        'Smooth animations and transitions',
-        'Dark mode support',
-        'SEO optimized',
+        'Real-time KYC workflow',
+        'GraphQL APIs & WebSocket communication',
+        'Optimized video pipelines (80% less latency)',
+        'Janus Media Server integration',
       ],
     },
     {
       id: 3,
-      title: 'E-Commerce Platform',
-      description: 'Full-stack e-commerce solution with payment integration and admin dashboard.',
-      tags: ['React', 'Node.js', 'MongoDB', 'Stripe'],
-      icon: 'cart',
+      title: 'Incentive Management System',
+      description: 'Backend services for large-scale incentive calculations for Jio Payment Bank.',
+      tags: ['Node.js', 'Angular', 'Batch Processing'],
+      icon: 'cash',
       color: '#00CED1',
-      githubUrl: 'https://github.com/manjunath',
+      githubUrl: null,
       demoUrl: null,
       features: [
-        'User authentication and authorization',
-        'Shopping cart and checkout',
-        'Payment gateway integration',
-        'Admin panel for inventory management',
+        'High-volume transactional data processing',
+        'Automated payout processing pipelines',
+        'Job schedulers and batch workflows',
+        'Optimized API integration',
       ],
     },
     {
       id: 4,
-      title: 'Task Management App',
-      description: 'Collaborative task management tool with real-time updates and team features.',
-      tags: ['React Native', 'Firebase', 'Redux'],
-      icon: 'checkbox',
+      title: 'Developer Portfolio',
+      description: 'Interactive 3D portfolio specific to backend engineering showcase.',
+      tags: ['Angular', 'Three.js', 'Animations'],
+      icon: 'globe',
       color: '#FFD700',
-      githubUrl: 'https://github.com/manjunath',
-      demoUrl: null,
+      githubUrl: 'https://github.com/manju1399',
+      demoUrl: 'https://manjunath-9913.web.app',
       features: [
-        'Real-time task synchronization',
-        'Team collaboration features',
-        'Push notifications',
-        'Offline mode support',
-      ],
-    },
-    {
-      id: 5,
-      title: 'Weather Dashboard',
-      description: 'Beautiful weather application with forecasts, maps, and location-based alerts.',
-      tags: ['React', 'API Integration', 'Charts'],
-      icon: 'partly-sunny',
-      color: '#FF8C00',
-      githubUrl: 'https://github.com/manjunath',
-      demoUrl: 'https://weather.manjunath.dev',
-      features: [
-        '7-day weather forecast',
-        'Interactive weather maps',
-        'Location-based alerts',
-        'Historical data visualization',
-      ],
-    },
-    {
-      id: 6,
-      title: 'Chat Application',
-      description: 'Real-time messaging app with group chats, file sharing, and video calls.',
-      tags: ['React', 'Socket.io', 'WebRTC'],
-      icon: 'chatbubbles',
-      color: '#9370DB',
-      githubUrl: 'https://github.com/manjunath',
-      demoUrl: null,
-      features: [
-        'Real-time messaging',
-        'Group chat support',
-        'File and media sharing',
-        'Video call integration',
+        'Interactive 3D elements',
+        'Performance-optimized animations',
+        'Automated contact workflows',
+        'Responsive design',
       ],
     },
   ];
@@ -130,9 +101,12 @@ const ProjectsSection = () => {
   return (
     <View style={styles.container}>
       <StarryBackground />
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          isDesktop && styles.contentWeb
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
@@ -143,17 +117,25 @@ const ProjectsSection = () => {
         </Animatable.View>
 
         {/* Projects Grid */}
-        <View style={styles.projectsContainer}>
+        <View style={[
+          styles.projectsContainer,
+          (isDesktop || isTablet) && styles.projectsGrid
+        ]}>
           {projects.map((project, index) => (
             <Animatable.View
               key={project.id}
               animation="fadeInUp"
               delay={index * 100}
               duration={800}
+              style={[
+                styles.projectWrapper,
+                isDesktop ? { width: '32%' } : isTablet ? { width: '48%' } : { width: '100%' }
+              ]}
             >
               <TouchableOpacity
                 onPress={() => handleProjectPress(project)}
                 activeOpacity={0.9}
+                style={{ flex: 1 }}
               >
                 <LinearGradient
                   colors={[`${project.color}20`, 'rgba(20, 20, 42, 0.8)']}
@@ -208,7 +190,7 @@ const ProjectsSection = () => {
                       )}
                       <TouchableOpacity
                         onPress={() => handleProjectPress(project)}
-                        style={[styles.actionButton, { backgroundColor: project.color }]}
+                        style={[styles.actionButton, { backgroundColor: project.color, marginLeft: 'auto' }]}
                       >
                         <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
                       </TouchableOpacity>
@@ -240,7 +222,7 @@ const ProjectsSection = () => {
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>2+</Text>
+                <Text style={styles.statNumber}>3+</Text>
                 <Text style={styles.statLabel}>Years Exp</Text>
               </View>
             </LinearGradient>
@@ -262,6 +244,12 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     paddingBottom: 40,
+  },
+  contentWeb: {
+    width: '100%',
+    maxWidth: 1200,
+    alignSelf: 'center',
+    paddingHorizontal: 40,
   },
   sectionTitle: {
     fontSize: 32,
@@ -288,12 +276,21 @@ const styles = StyleSheet.create({
   projectsContainer: {
     marginBottom: 20,
   },
+  projectsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    gap: 20,
+  },
+  projectWrapper: {
+    marginBottom: 20,
+  },
   projectCard: {
     borderRadius: 20,
     padding: 20,
-    marginBottom: 20,
     borderWidth: 1,
     borderColor: 'rgba(108, 99, 255, 0.3)',
+    height: '100%',
   },
   projectIconContainer: {
     width: 70,
@@ -338,6 +335,7 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     gap: 10,
+    marginTop: 'auto',
   },
   actionButton: {
     width: 40,

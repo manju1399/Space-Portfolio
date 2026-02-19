@@ -26,23 +26,32 @@ const ProjectDetailsScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
-      {project.image && (
-        <View style={styles.imageContainer}>
+      <View style={styles.imageContainer}>
+        {project.image ? (
           <Image source={{ uri: project.image }} style={styles.projectImage} />
+        ) : (
           <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.8)']}
-            style={styles.imageGradient}
-          />
-          <Text style={styles.projectTitle}>{project.title}</Text>
-        </View>
-      )}
+            colors={[project.color || '#6C63FF', '#0A0A1A']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={[styles.projectImage, { justifyContent: 'center', alignItems: 'center' }]}
+          >
+            <Ionicons name={project.icon as any || 'code-slash'} size={80} color="rgba(255,255,255,0.2)" />
+          </LinearGradient>
+        )}
+        <LinearGradient
+          colors={['transparent', '#0A0A1A']}
+          style={styles.imageGradient}
+        />
+        <Text style={styles.projectTitle}>{project.title}</Text>
+      </View>
 
       <View style={styles.contentContainer}>
         <View style={styles.tagsContainer}>
@@ -69,7 +78,7 @@ const ProjectDetailsScreen = () => {
 
         <View style={styles.buttonContainer}>
           {project.githubUrl && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.button, styles.githubButton]}
               onPress={() => handleOpenLink(project.githubUrl)}
             >
@@ -77,9 +86,9 @@ const ProjectDetailsScreen = () => {
               <Text style={styles.buttonText}>View Code</Text>
             </TouchableOpacity>
           )}
-          
+
           {project.demoUrl && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.button, styles.demoButton]}
               onPress={() => handleOpenLink(project.demoUrl)}
             >
